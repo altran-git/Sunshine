@@ -60,7 +60,7 @@ public class MainActivityFragment extends Fragment {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            new FetchWeatherTask().execute("95054,USA");
+            new FetchWeatherTask().execute("95054");
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -195,9 +195,9 @@ public class MainActivityFragment extends Fragment {
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
 
-            for (String s : resultStrs) {
-                Log.v(LOG_TAG, "Forecast entry: " + s);
-            }
+            //for (String s : resultStrs) {
+            //    Log.v(LOG_TAG, "Forecast entry: " + s);
+            //}
             return resultStrs;
 
         }
@@ -219,7 +219,7 @@ public class MainActivityFragment extends Fragment {
             String forecastJsonStr = null;
 
             String format = "json";
-            String units = "metric";
+            String units = "imperial";
             int numDays = 7;
 
             try {
@@ -275,7 +275,7 @@ public class MainActivityFragment extends Fragment {
 
                 forecastJsonStr = buffer.toString();
 
-                Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
+                //Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
@@ -304,6 +304,15 @@ public class MainActivityFragment extends Fragment {
 
             //will only return null if there was an error getting or parsing the forecast.
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+            //add data from server
+            if (result != null) {
+                mForecastAdapter.clear();
+                mForecastAdapter.addAll(result);
+            }
         }
     }
 

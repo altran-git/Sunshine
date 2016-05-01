@@ -65,6 +65,7 @@ public class MainActivityFragment extends Fragment {
             updateWeather();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

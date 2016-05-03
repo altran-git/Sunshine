@@ -69,6 +69,19 @@ public class MainActivityFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private void updateWeather(){
+        String location = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .getString(getString(R.string.pref_location_key),
+                        getString(R.string.pref_location_default));
+        new FetchWeatherTask().execute(location);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -99,19 +112,6 @@ public class MainActivityFragment extends Fragment {
         });
 
         return rootView;
-    }
-
-    private void updateWeather(){
-        String location = PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getString(getString(R.string.pref_location_key),
-                        getString(R.string.pref_location_default));
-        new FetchWeatherTask().execute(location);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateWeather();
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]>{

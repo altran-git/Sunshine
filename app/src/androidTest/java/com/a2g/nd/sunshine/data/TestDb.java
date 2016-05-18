@@ -181,7 +181,7 @@ public class TestDb extends AndroidTestCase {
         Long locationRowId = TestUtilities.insertNorthPoleLocationValues(mContext);
 
         // First step: Get reference to writable database
-        com.a2g.nd.sunshine.data.WeatherDbHelper dbHelper = new com.a2g.nd.sunshine.data.WeatherDbHelper(mContext);
+        WeatherDbHelper dbHelper = new WeatherDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // Create ContentValues of what you want to insert
@@ -190,13 +190,13 @@ public class TestDb extends AndroidTestCase {
 
         // Insert ContentValues into database and get a row ID back
         long weatherRowId;
-        weatherRowId = db.insert(com.a2g.nd.sunshine.data.WeatherContract.WeatherEntry.TABLE_NAME, null, weatherValues);
+        weatherRowId = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, weatherValues);
 
         assertTrue(weatherRowId != -1);
 
         // Query the database and receive a Cursor back
         Cursor cursor = db.query(
-                com.a2g.nd.sunshine.data.WeatherContract.WeatherEntry.TABLE_NAME,  // Table to Query
+                WeatherContract.WeatherEntry.TABLE_NAME,  // Table to Query
                 null, // all columns
                 null, // Columns for the "where" clause
                 null, // Values for the "where" clause

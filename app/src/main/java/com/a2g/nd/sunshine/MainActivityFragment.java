@@ -113,13 +113,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(LOG_TAG, "onStart");
-        updateWeather();
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
         Log.d(LOG_TAG, "onStop");
@@ -163,6 +156,12 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         });
 
         return rootView;
+    }
+
+    // since we read the location when we create the loader, all we need to do is restart things
+    public void onLocationChanged(){
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
 
     @Override

@@ -12,7 +12,7 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
-    private final String FORECASTFRAGMENT_TAG = "FFTAG";
+    private final String MAINACTIVITYFRAGMENT_TAG = "MATAG";
     private String mLocation;
 
     @Override
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new MainActivityFragment(), FORECASTFRAGMENT_TAG)
+                    .add(R.id.container, new MainActivityFragment(), MAINACTIVITYFRAGMENT_TAG)
                     .commit();
         }
     }
@@ -37,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
         String location = Utility.getPreferredLocation( this );
         // update the location in our second pane using the fragment manager
         if (location != null && !location.equals(mLocation)) {
-            MainActivityFragment ff = (MainActivityFragment) getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
-            if ( null != ff ) {
-                ff.onLocationChanged();
+            MainActivityFragment maf = (MainActivityFragment) getSupportFragmentManager().findFragmentByTag(MAINACTIVITYFRAGMENT_TAG);
+            if ( null != maf ) {
+                maf.onLocationChanged();
             }
             mLocation = location;
         }

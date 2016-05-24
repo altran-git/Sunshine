@@ -8,6 +8,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class DetailActivity extends AppCompatActivity {
+    private final String LOG_TAG = DetailActivity.class.getSimpleName();
+    private final String DETAILFRAGMENT_TAG = "FFTAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,6 +18,12 @@ public class DetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new DetailActivityFragment(), DETAILFRAGMENT_TAG)
+                    .commit();
+        }
     }
 
     @Override

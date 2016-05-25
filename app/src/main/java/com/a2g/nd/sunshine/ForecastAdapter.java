@@ -87,10 +87,24 @@ public class ForecastAdapter extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
+        int viewType = getItemViewType(cursor.getPosition());
+
         // Read weather icon ID from cursor
-        int weatherId = cursor.getInt(MainActivityFragment.COL_WEATHER_ID);
-        // Use placeholder image for now
-        viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+        int weatherId = cursor.getInt(MainActivityFragment.COL_WEATHER_CONDITION_ID);
+        int layoutId = -1;
+        switch (viewType) {
+            case VIEW_TYPE_TODAY: {
+                layoutId = Utility.getArtResourceForWeatherCondition(weatherId);
+                break;
+            }
+            case VIEW_TYPE_FUTURE_DAY: {
+                layoutId = Utility.getIconResourceForWeatherCondition(weatherId);
+                break;
+            }
+        }
+
+        //Set weather icon
+        viewHolder.iconView.setImageResource(layoutId);
 
         // Read date from cursor
         long dateInMillis  = cursor.getLong(MainActivityFragment.COL_WEATHER_DATE);

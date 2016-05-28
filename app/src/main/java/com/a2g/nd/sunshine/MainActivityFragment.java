@@ -1,6 +1,5 @@
 package com.a2g.nd.sunshine;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,7 +24,7 @@ import com.a2g.nd.sunshine.data.WeatherContract;
  */
 public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
-    public final String LOG_TAG = MainActivityFragment.class.getSimpleName();
+    private static final String LOG_TAG = "LOG_TAG";
 
     private final static int FORECAST_LOADER = 0;
 
@@ -62,21 +61,31 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     static final int COL_COORD_LONG = 8;
 
     private ForecastAdapter mForecastAdapter;
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Uri dateUri);
+    }
 
     public MainActivityFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
+        Log.d(LOG_TAG, "MainFrag onCreate");
         super.onCreate(savedInstanceState);
-        Log.d(LOG_TAG, "onCreate");
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        Log.d(LOG_TAG, "onCreateOptionsMenu");
         // Inflate the fragment menu
         inflater.inflate(R.menu.forecastfragment, menu);
     }
@@ -101,27 +110,27 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        Log.d(LOG_TAG, "onPause");
+    public void onStart() {
+        super.onStart();
+        Log.d(LOG_TAG, "MainFrag onStart");
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(LOG_TAG, "onResume");
+    public void onPause() {
+        super.onPause();
+        Log.d(LOG_TAG, "MainFrag onPause");
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Log.d(LOG_TAG, "onStop");
+        Log.d(LOG_TAG, "MainFrag onStop");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(LOG_TAG, "onDestroy");
+        Log.d(LOG_TAG, "MainFrag onDestroy");
     }
 
     @Override
@@ -146,11 +155,10 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    Intent intent = new Intent(getActivity(), DetailActivity.class)
-                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+                    ((Callback) getActivity())
+                            .onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
                                     locationSetting, cursor.getLong(COL_WEATHER_DATE)
                             ));
-                    startActivity(intent);
                 }
             }
         });
@@ -174,7 +182,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(LOG_TAG, "In Main onCreateLoader");
+        Log.d(LOG_TAG, "MainFrag onCreateLoader");
 
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
@@ -190,7 +198,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.d(LOG_TAG, "In Main onLoadFinished");
+        Log.d(LOG_TAG, "MainFrag onLoadFinished");
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
         mForecastAdapter.swapCursor(cursor);
@@ -198,7 +206,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d(LOG_TAG, "In Main onLoaderReset");
+        Log.d(LOG_TAG, "MainFrag onLoaderReset");
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.

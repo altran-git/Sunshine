@@ -30,6 +30,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
+    private boolean mUseTodayLayout;
 
     private static final String SELECTED_KEY = "selected_position";
     private final static int FORECAST_LOADER = 0;
@@ -141,7 +142,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-
+        Log.d(LOG_TAG, "MainFrag onCreateView");
         // The ForecastAdapter will take data from a source and
         // use it to populate the ListView it's attached to.
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
@@ -181,7 +182,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             // swapout in onLoadFinished.
             mPosition = savedInstanceState.getInt(SELECTED_KEY);
         }
-
         return rootView;
     }
 
@@ -193,6 +193,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onActivityCreated (Bundle savedInstanceState){
+        Log.d(LOG_TAG, "MainFrag onActivityCreated");
         // Prepare the loader.  Either re-connect with an existing one,
         // or start a new one.
         getLoaderManager().initLoader(FORECAST_LOADER, null, this);
@@ -254,5 +255,13 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
         mForecastAdapter.swapCursor(null);
+    }
+
+    public void setUseTodayLayout(boolean useTodayLayout){
+        Log.d(LOG_TAG, "MainFrag setUseTodayLayout");
+        mUseTodayLayout = useTodayLayout;
+        if(mForecastAdapter != null){
+            mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+        }
     }
 }

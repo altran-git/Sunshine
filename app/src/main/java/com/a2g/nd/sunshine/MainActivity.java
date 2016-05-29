@@ -40,6 +40,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             mTwoPane = false;
         }
 
+        MainActivityFragment mainActivityFragment = ((MainActivityFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_main));
+        mainActivityFragment.setUseTodayLayout(!mTwoPane);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
     }

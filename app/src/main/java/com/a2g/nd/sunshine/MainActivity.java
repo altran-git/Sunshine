@@ -3,6 +3,8 @@ package com.a2g.nd.sunshine;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -21,8 +23,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         Log.d(LOG_TAG, "Main onCreate");
         super.onCreate(savedInstanceState);
         mLocation = Utility.getPreferredLocation(this);
-
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        AppBarLayout mAppBarLayout = (AppBarLayout) findViewById(R.id.appbar);
+
         if (findViewById(R.id.weather_detail_container) != null) {
             // The detail container view will be present only in the large-screen layouts
             // (res/layout-sw600dp). If this view is present, then the activity should be
@@ -38,14 +45,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             }
         } else {
             mTwoPane = false;
+            ViewCompat.setElevation(mAppBarLayout, 0f);
         }
 
         MainActivityFragment mainActivityFragment = ((MainActivityFragment)getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_main));
         mainActivityFragment.setUseTodayLayout(!mTwoPane);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
     }
 
     @Override

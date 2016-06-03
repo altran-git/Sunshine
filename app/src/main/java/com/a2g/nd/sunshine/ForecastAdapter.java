@@ -115,7 +115,7 @@ public class ForecastAdapter extends CursorAdapter {
         // Read date from cursor
         long dateInMillis  = cursor.getLong(MainActivityFragment.COL_WEATHER_DATE);
         // Find TextView and set formatted date on it
-        viewHolder.dateView.setText(Utility.getFriendlyDayString(context, dateInMillis));
+        viewHolder.dateView.setText(Utility.getFriendlyDayString(context, dateInMillis, mUseTodayLayout));
 
         // Read weather forecast from cursor
         String description  = cursor.getString(MainActivityFragment.COL_WEATHER_DESC);

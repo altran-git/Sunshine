@@ -246,6 +246,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             // to, do so now.
             mListView.smoothScrollToPosition(mPosition);
         }
+        else if (mPosition == ListView.INVALID_POSITION && MainActivity.mTwoPane){
+            mListView.setItemChecked(0, true);
+        }
     }
 
     @Override

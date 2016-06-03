@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     private static final String LOG_TAG = "LOG_TAG";
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private String mLocation;
-    private boolean mTwoPane;
+    public static boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
         if (findViewById(R.id.weather_detail_container) != null) {
             // The detail container view will be present only in the large-screen layouts
-            // (res/layout-sw600dp). If this view is present, then the activity should be
+            // (res/layout-sw600dp-land). If this view is present, then the activity should be
             // in two-pane mode.
             mTwoPane = true;
             // In two-pane mode, show the detail view in this activity by

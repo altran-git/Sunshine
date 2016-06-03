@@ -106,6 +106,11 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         if (arguments != null){
             mUri = arguments.getParcelable(DETAIL_URI);
         }
+        else {
+            String locationSetting = Utility.getPreferredLocation(getActivity());
+            long epochTime = System.currentTimeMillis();
+            mUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, epochTime);
+        }
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         mIconView = (ImageView) rootView.findViewById(R.id.detail_icon);

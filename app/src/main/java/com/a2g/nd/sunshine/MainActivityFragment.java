@@ -1,5 +1,8 @@
 package com.a2g.nd.sunshine;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -36,6 +39,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private static final String SELECTED_KEY = "selected_position";
     private final static int FORECAST_LOADER = 0;
+
 
     // For the forecast view we're showing only a small subset of the stored data.
     // Specify the columns we need.
@@ -114,9 +118,17 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private void updateWeather(){
         String location = Utility.getPreferredLocation(getActivity());
-        Intent intent = new Intent(getActivity(), SunshineService.class);
+
+        Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
         intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
-        getActivity().startService(intent);
+
+        //Wrap in a pending intent which only fires once.
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+
+        AlarmManager alarmMgr = (AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
+
+        //Set the AlarmManager to wake up the system.
+        alarmMgr.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, alarmIntent);
     }
 
     @Override

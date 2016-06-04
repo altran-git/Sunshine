@@ -1,5 +1,6 @@
 package com.a2g.nd.sunshine;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.a2g.nd.sunshine.data.WeatherContract;
+import com.a2g.nd.sunshine.service.SunshineService;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -112,7 +114,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private void updateWeather(){
         String location = Utility.getPreferredLocation(getActivity());
-        new FetchWeatherTask(getActivity()).execute(location);
+        Intent intent = new Intent(getActivity(), SunshineService.class);
+        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
+        getActivity().startService(intent);
     }
 
     @Override

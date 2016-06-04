@@ -43,6 +43,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                         .replace(R.id.weather_detail_container, new DetailActivityFragment(), DETAILFRAGMENT_TAG)
                         .commit();
             }
+            else {
+                DetailActivityFragment df = (DetailActivityFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+                if (df == null){
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.weather_detail_container, new DetailActivityFragment(), DETAILFRAGMENT_TAG)
+                            .commit();
+                }
+            }
         } else {
             mTwoPane = false;
             ViewCompat.setElevation(mAppBarLayout, 0f);

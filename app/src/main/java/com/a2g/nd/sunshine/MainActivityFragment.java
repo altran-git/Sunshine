@@ -1,9 +1,5 @@
 package com.a2g.nd.sunshine;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,7 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.a2g.nd.sunshine.data.WeatherContract;
-import com.a2g.nd.sunshine.service.SunshineService;
+import com.a2g.nd.sunshine.sync.SunshineSyncAdapter;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -117,18 +113,19 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     private void updateWeather(){
-        String location = Utility.getPreferredLocation(getActivity());
+        SunshineSyncAdapter.syncImmediately(getActivity());
+//        String location = Utility.getPreferredLocation(getActivity());
 
-        Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
-        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
-
-        //Wrap in a pending intent which only fires once.
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-
-        AlarmManager alarmMgr = (AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
-
-        //Set the AlarmManager to wake up the system.
-        alarmMgr.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, alarmIntent);
+//        Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
+//        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
+//
+//        //Wrap in a pending intent which only fires once.
+//        PendingIntent alarmIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+//
+//        AlarmManager alarmMgr = (AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
+//
+//        //Set the AlarmManager to wake up the system.
+//        alarmMgr.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, alarmIntent);
     }
 
     @Override
@@ -277,7 +274,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     public void setUseTodayLayout(boolean useTodayLayout){
-        Log.d(LOG_TAG, "MainFrag setUseTodayLayout");
         mUseTodayLayout = useTodayLayout;
         if(mForecastAdapter != null){
             mForecastAdapter.setUseTodayLayout(mUseTodayLayout);

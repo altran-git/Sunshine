@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.a2g.nd.sunshine.sync.SunshineSyncAdapter;
+
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback{
 
     private static final String LOG_TAG = "LOG_TAG";
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         mainActivityFragment.setUseTodayLayout(!mTwoPane);
 
 
+        SunshineSyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override

@@ -8,6 +8,11 @@
     -->
     <string name="app_name">Sunshine</string>
 
+    <!-- Account type (for sync-adapter authenticator) -->
+    <!-- SyncAdapter related -->
+    <string name="sync_account_type">sunshine.nd.a2g.com</string>
+    <string name="content_authority">com.a2g.nd.sunshine</string>
+
     <!--
          By convention, "action" denotes that this String will be used as the label for an Action,
          typically from the action bar.  The ActionBar is limited real estate, so shorter is better.

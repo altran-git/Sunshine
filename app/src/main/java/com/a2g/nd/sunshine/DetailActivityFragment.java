@@ -90,6 +90,12 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "DetailFrag onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState){
         Log.d(LOG_TAG, "DetailFrag onCreate");
         super.onCreate(savedInstanceState);
@@ -113,6 +119,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         }
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+
         mIconView = (ImageView) rootView.findViewById(R.id.detail_icon);
         mDateView = (TextView) rootView.findViewById(R.id.detail_date_textview);
         mFriendlyDateView = (TextView) rootView.findViewById(R.id.detail_day_textview);
@@ -234,7 +241,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
             mPressureView.setText(getActivity().getString(R.string.format_pressure, pressure));
 
             // We still need this for the share intent
-            mForecastStr = String.format("%s - %s - %s/%s", dateText, description, high, low);
+            mForecastStr = String.format("%s - %s - %s/%s", dateText, description, highString, lowString);
 
             // If onCreateOptionsMenu has already happened, we need to update the share intent now.
             if (mShareActionProvider != null) {

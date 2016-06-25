@@ -1,9 +1,11 @@
 package com.a2g.nd.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.a2g.nd.sunshine.data.WeatherContract;
 import com.a2g.nd.sunshine.sync.SunshineSyncAdapter;
@@ -24,9 +27,9 @@ import com.a2g.nd.sunshine.sync.SunshineSyncAdapter;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener{
 
-    private static final String LOG_TAG = "LOG_TAG";
+    private static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
 
     private ForecastAdapter mForecastAdapter;
 
@@ -87,7 +90,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onCreate(Bundle savedInstanceState){
-        Log.d(LOG_TAG, "MainFrag onCreate");
+        Log.d(LOG_TAG, "onCreate");
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
@@ -95,7 +98,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        Log.d(LOG_TAG, "MainFrag onCreateOptionsMenu");
+        Log.d(LOG_TAG, "onCreateOptionsMenu");
         // Inflate the fragment menu
         inflater.inflate(R.menu.forecastfragment, menu);
     }
@@ -168,32 +171,42 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onStart() {
+        Log.d(LOG_TAG, "onStart");
         super.onStart();
-        Log.d(LOG_TAG, "MainFrag onStart");
     }
 
     @Override
     public void onPause() {
+        Log.d(LOG_TAG, "onPause");
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
-        Log.d(LOG_TAG, "MainFrag onPause");
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(LOG_TAG, "onResume");
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.registerOnSharedPreferenceChangeListener(this);
+        super.onResume();
     }
 
     @Override
     public void onStop() {
+        Log.d(LOG_TAG, "onStop");
         super.onStop();
-        Log.d(LOG_TAG, "MainFrag onStop");
     }
 
     @Override
     public void onDestroy() {
+        Log.d(LOG_TAG, "onDestroy");
         super.onDestroy();
-        Log.d(LOG_TAG, "MainFrag onDestroy");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        Log.d(LOG_TAG, "MainFrag onCreateView");
+        Log.d(LOG_TAG, "onCreateView");
         // The ForecastAdapter will take data from a source and
         // use it to populate the ListView it's attached to.
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
@@ -202,6 +215,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
         // Get a reference to the ListView, and attach this adapter to it.
         mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        View emptyView = rootView.findViewById(R.id.listview_forecast_empty);
+        mListView.setEmptyView(emptyView);
         mListView.setAdapter(mForecastAdapter);
 
         // We'll call our MainActivity
@@ -264,7 +279,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(LOG_TAG, "MainFrag onCreateLoader");
+        Log.d(LOG_TAG, "onCreateLoader");
         // This is called when a new Loader needs to be created.  This
         // fragment only uses one loader, so we don't care about checking the id.
 
@@ -287,7 +302,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.d(LOG_TAG, "MainFrag onLoadFinished");
+        Log.d(LOG_TAG, "onLoadFinished");
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
         mForecastAdapter.swapCursor(cursor);
@@ -296,15 +311,16 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
             mListView.smoothScrollToPosition(mPosition);
-        }
-        else if (mPosition == ListView.INVALID_POSITION && MainActivity.mTwoPane){
+        } else if (mPosition == ListView.INVALID_POSITION && MainActivity.mTwoPane) {
             mListView.setItemChecked(0, true);
         }
+
+        updateEmptyView();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d(LOG_TAG, "MainFrag onLoaderReset");
+        Log.d(LOG_TAG, "onLoaderReset");
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
@@ -315,6 +331,44 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         mUseTodayLayout = useTodayLayout;
         if(mForecastAdapter != null){
             mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+        }
+    }
+
+    /*
+     Updates the empty list view with contextually relevant information that the user can
+     use to determine why they aren't seeing weather.
+    */
+    private void updateEmptyView() {
+        if ( mForecastAdapter.getCount() == 0 ) {
+            TextView tv = (TextView) getView().findViewById(R.id.listview_forecast_empty);
+            if ( null != tv ) {
+                // if cursor is empty, why? do we have an invalid location
+                int message = R.string.empty_forecast_list;
+                @SunshineSyncAdapter.LocationStatus int locationStatus = Utility.getLocationStatus(getActivity());
+                switch (locationStatus) {
+                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
+                        message = R.string.empty_forecast_list_server_down;
+                        break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
+                        message = R.string.empty_forecast_list_server_error;
+                        break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                        message = R.string.empty_forecast_list_invalid_location;
+                        break;
+                    default:
+                        if (!Utility.isNetworkAvailable(getActivity()) ) {
+                            message = R.string.empty_forecast_list_no_network;
+                        }
+                }
+                tv.setText(message);
+            }
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if ( key.equals(getString(R.string.pref_location_status_key)) ) {
+            updateEmptyView();
         }
     }
 }

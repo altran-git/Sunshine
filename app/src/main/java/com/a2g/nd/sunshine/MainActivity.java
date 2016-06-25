@@ -15,7 +15,7 @@ import com.a2g.nd.sunshine.sync.SunshineSyncAdapter;
 
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback{
 
-    private static final String LOG_TAG = "LOG_TAG";
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private String mLocation;
     public static boolean mTwoPane;

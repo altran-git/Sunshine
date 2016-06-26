@@ -10,13 +10,14 @@
     android:background="@drawable/touch_selector">
 
     <FrameLayout
-        android:layout_width="@dimen/list_item_image_width"
+        android:layout_width="60dp"
         android:layout_height="wrap_content">
         <ImageView
             android:id="@+id/list_item_icon"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"/>
     </FrameLayout>
 
     <LinearLayout

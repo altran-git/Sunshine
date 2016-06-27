@@ -5,8 +5,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -39,7 +37,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        AppBarLayout mAppBarLayout = (AppBarLayout) findViewById(R.id.appbar);
 
         if (findViewById(R.id.weather_detail_container) != null) {
             // The detail container view will be present only in the large-screen layouts
@@ -64,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             }
         } else {
             mTwoPane = false;
-            ViewCompat.setElevation(mAppBarLayout, 0f);
+            getSupportActionBar().setElevation(0f);
         }
 
         MainActivityFragment mainActivityFragment = ((MainActivityFragment)getSupportFragmentManager()

@@ -2,7 +2,7 @@ package com.a2g.nd.sunshine;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,38 +13,43 @@ import com.bumptech.glide.Glide;
 
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
- * from a {@link Cursor} to a {@link android.widget.ListView}.
+ * from a {@link android.database.Cursor} to a {@link android.support.v7.widget.RecyclerView}.
  */
-public class ForecastAdapter extends CursorAdapter {
+public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapterViewHolder> {
 
     private final int VIEW_TYPE_TODAY = 0;
     private final int VIEW_TYPE_FUTURE_DAY = 1;
-    private final int VIEW_TYPE_COUNT = 2;
 
     private boolean mUseTodayLayout = true;
+
+    private Cursor mCursor;
+    final private Context mContext;
 
     /**
      * Cache of the children views for a forecast list item.
      */
-    public static class ViewHolder {
-        public final ImageView iconView;
-        public final TextView dateView;
-        public final TextView descriptionView;
-        public final TextView highTempView;
-        public final TextView lowTempView;
+    public class ForecastAdapterViewHolder extends RecyclerView.ViewHolder {
+        public final ImageView mIconView;
+        public final TextView mDateView;
+        public final TextView mDescriptionView;
+        public final TextView mHighTempView;
+        public final TextView mLowTempView;
 
-        public ViewHolder(View view) {
-            iconView = (ImageView) view.findViewById(R.id.list_item_icon);
-            dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
-            descriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
-            highTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
-            lowTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
+        public ForecastAdapterViewHolder(View view) {
+            super(view);
+            mIconView = (ImageView) view.findViewById(R.id.list_item_icon);
+            mDateView = (TextView) view.findViewById(R.id.list_item_date_textview);
+            mDescriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
+            mHighTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
+            mLowTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
         }
     }
 
-    public ForecastAdapter(Context context, Cursor c, int flags) {
-        super(context, c, flags);
+    public ForecastAdapter(Context context) {
+        mContext = context;
     }
+
+
 
     public void setUseTodayLayout(boolean useTodayLayout){
         mUseTodayLayout = useTodayLayout;
@@ -56,97 +61,104 @@ public class ForecastAdapter extends CursorAdapter {
     }
 
     @Override
-    public int getViewTypeCount() {
-        return VIEW_TYPE_COUNT;
+    public int getItemCount() {
+        if ( null == mCursor ) return 0;
+        return mCursor.getCount();
+    }
+
+    public void swapCursor(Cursor newCursor) {
+        mCursor = newCursor;
+        notifyDataSetChanged();
+    }
+
+    public Cursor getCursor() {
+        return mCursor;
     }
 
     /*
-            Remember that these views are reused as needed.
-         */
+        This takes advantage of the fact that the viewGroup passed to onCreateViewHolder is the
+        RecyclerView that will be used to contain the view, so that it can get the current
+        ItemSelectionManager from the view.
+        One could implement this pattern without modifying RecyclerView by taking advantage
+        of the view tag to store the ItemChoiceManager.
+     */
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        // Choose the layout type
-        int viewType = getItemViewType(cursor.getPosition());
-        int layoutId = -1;
-        switch (viewType) {
-            case VIEW_TYPE_TODAY: {
-                layoutId = R.layout.list_item_forecast_today;
-                break;
+    public ForecastAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        if ( viewGroup instanceof RecyclerView ) {
+            int layoutId = -1;
+            switch (viewType) {
+                case VIEW_TYPE_TODAY: {
+                    layoutId = R.layout.list_item_forecast_today;
+                    break;
+                }
+                case VIEW_TYPE_FUTURE_DAY: {
+                    layoutId = R.layout.list_item_forecast;
+                    break;
+                }
             }
-            case VIEW_TYPE_FUTURE_DAY: {
-                layoutId = R.layout.list_item_forecast;
-                break;
-            }
+            View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutId, viewGroup, false);
+            view.setFocusable(true);
+            return new ForecastAdapterViewHolder(view);
+        } else {
+            throw new RuntimeException("Not bound to RecyclerViewSelection");
         }
-
-        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
-
-        ViewHolder viewHolder =  new ViewHolder(view);
-        view.setTag(viewHolder);
-
-        return view;
     }
 
     /*
         This is where we fill-in the views with the contents of the cursor.
      */
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void onBindViewHolder(ForecastAdapterViewHolder forecastAdapterViewHolder, int position) {
+        mCursor.moveToPosition(position);
+        int weatherId = mCursor.getInt(MainActivityFragment.COL_WEATHER_CONDITION_ID);
+        int defaultImage;
 
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
-
-        int viewType = getItemViewType(cursor.getPosition());
-
-        // Read weather icon ID from cursor
-        int weatherId = cursor.getInt(MainActivityFragment.COL_WEATHER_CONDITION_ID);
-        int fallbackIconId;
-
-        switch (viewType) {
-            case VIEW_TYPE_TODAY: {
-                // Get weather icon
-                fallbackIconId = Utility.getArtResourceForWeatherCondition(
-                        weatherId);
+        switch (getItemViewType(position)) {
+            case VIEW_TYPE_TODAY:
+                defaultImage = Utility.getArtResourceForWeatherCondition(weatherId);
                 break;
-            }
-            default: {
-                // Get weather icon
-                fallbackIconId = Utility.getIconResourceForWeatherCondition(
-                        weatherId);
-                break;
-            }
+            default:
+                defaultImage = Utility.getIconResourceForWeatherCondition(weatherId);
         }
 
-        Glide.with(mContext)
-                .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
-                .error(fallbackIconId)
-                .crossFade()
-                .into(viewHolder.iconView);
+        if ( Utility.usingLocalGraphics(mContext) ) {
+            forecastAdapterViewHolder.mIconView.setImageResource(defaultImage);
+        } else {
+            Glide.with(mContext)
+                    .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(forecastAdapterViewHolder.mIconView);
+        }
 
         // Read date from cursor
-        long dateInMillis  = cursor.getLong(MainActivityFragment.COL_WEATHER_DATE);
-        // Find TextView and set formatted date on it
-        viewHolder.dateView.setText(Utility.getFriendlyDayString(context, dateInMillis, mUseTodayLayout));
+        long dateInMillis = mCursor.getLong(MainActivityFragment.COL_WEATHER_DATE);
 
-        // Get description from weather condition ID
-        String description = Utility.getStringForWeatherCondition(context, weatherId);
+        // Find TextView and set formatted date on it
+        forecastAdapterViewHolder.mDateView.setText(Utility.getFriendlyDayString(mContext, dateInMillis, mUseTodayLayout));
+
+        // Read weather forecast from cursor
+        String description = Utility.getStringForWeatherCondition(mContext, weatherId);
+
         // Find TextView and set weather forecast on it
-        viewHolder.descriptionView.setText(description);
-        viewHolder.descriptionView.setContentDescription(context.getString(R.string.a11y_forecast, description));
+        forecastAdapterViewHolder.mDescriptionView.setText(description);
+        forecastAdapterViewHolder.mDescriptionView.setContentDescription(mContext.getString(R.string.a11y_forecast, description));
 
         // For accessibility, we don't want a content description for the icon field
         // because the information is repeated in the description view and the icon
         // is not individually selectable
 
         // Read high temperature from cursor
-        String high = Utility.formatTemperature(
-                context, cursor.getDouble(MainActivityFragment.COL_WEATHER_MAX_TEMP));
-        viewHolder.highTempView.setText(high);
-        viewHolder.highTempView.setContentDescription(context.getString(R.string.a11y_high_temp, high));
+        double high = mCursor.getDouble(MainActivityFragment.COL_WEATHER_MAX_TEMP);
+        String highString = Utility.formatTemperature(mContext, high);
+        forecastAdapterViewHolder.mHighTempView.setText(highString);
+        forecastAdapterViewHolder.mHighTempView.setContentDescription(mContext.getString(R.string.a11y_high_temp, highString));
 
         // Read low temperature from cursor
-        String low = Utility.formatTemperature(
-                context, cursor.getDouble(MainActivityFragment.COL_WEATHER_MIN_TEMP));
-        viewHolder.lowTempView.setText(low);
-        viewHolder.lowTempView.setContentDescription(context.getString(R.string.a11y_low_temp, low));
+        double low = mCursor.getDouble(MainActivityFragment.COL_WEATHER_MIN_TEMP);
+        String lowString = Utility.formatTemperature(mContext, low);
+        forecastAdapterViewHolder.mLowTempView.setText(lowString);
+        forecastAdapterViewHolder.mLowTempView.setContentDescription(mContext.getString(R.string.a11y_low_temp, lowString));
     }
+
 }

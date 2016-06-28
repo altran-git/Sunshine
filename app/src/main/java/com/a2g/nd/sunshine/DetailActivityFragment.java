@@ -9,6 +9,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -122,7 +124,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
             mUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, epochTime);
         }
 
-        View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_detail_start, container, false);
 
         mIconView = (ImageView) rootView.findViewById(R.id.detail_icon);
         mDateView = (TextView) rootView.findViewById(R.id.detail_date_textview);
@@ -175,6 +177,11 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(LOG_TAG, "DetailFrag onCreateLoader");
 
+        ViewParent vp = getView().getParent();
+        if ( vp instanceof CardView) {
+            ((View)vp).setVisibility(View.INVISIBLE);
+        }
+
         if (mUri != null) {
             // Now create and return a CursorLoader that will take care of
             // creating a Cursor for the data being displayed.
@@ -195,6 +202,10 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         Log.d(LOG_TAG, "DetailFrag onLoadFinished");
 
         if (cursor != null && cursor.moveToFirst()) {
+            ViewParent vp = getView().getParent();
+            if ( vp instanceof CardView ) {
+                ((View)vp).setVisibility(View.VISIBLE);
+            }
 
             // Read weather condition ID from cursor
             int weatherId = cursor.getInt(COL_WEATHER_CONDITION_ID);

@@ -1,7 +1,9 @@
 package com.a2g.nd.sunshine;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,6 +22,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.TextView;
 
 import com.a2g.nd.sunshine.data.WeatherContract;
@@ -35,7 +40,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private RecyclerView mRecyclerView;
     private int mPosition = RecyclerView.NO_POSITION;
-    private boolean mUseTodayLayout;
+    private boolean mUseTodayLayout, mAutoSelectView;
+    private int mChoiceMode;
 
     private static final String SELECTED_KEY = "selected_position";
     private final static int FORECAST_LOADER = 0;
@@ -122,6 +128,16 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState) {
+        super.onInflate(activity, attrs, savedInstanceState);
+        TypedArray a = activity.obtainStyledAttributes(attrs, R.styleable.MainActivityFragment,
+                0, 0);
+        mChoiceMode = a.getInt(R.styleable.MainActivityFragment_android_choiceMode, AbsListView.CHOICE_MODE_NONE);
+        mAutoSelectView = a.getBoolean(R.styleable.MainActivityFragment_autoSelectView, false);
+        a.recycle();
     }
 
     private void openPreferredLocationInMap(){
@@ -233,7 +249,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                         );
                 mPosition = vh.getAdapterPosition();
             }
-        }, emptyView);
+        }, emptyView, mChoiceMode);
 
         // specify an adapter (see also next example)
         mRecyclerView.setAdapter(mForecastAdapter);
@@ -243,11 +259,17 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // does crazy lifecycle related things.  It should feel like some stuff stretched out,
         // or magically appeared to take advantage of room, but data or place in the app was never
         // actually *lost*.
-        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
-            // The RecyclerView probably hasn't even been populated yet.  Actually perform the
-            // swapout in onLoadFinished.
-            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(SELECTED_KEY)) {
+                // The Recycler View probably hasn't even been populated yet.  Actually perform the
+                // swapout in onLoadFinished.
+                mPosition = savedInstanceState.getInt(SELECTED_KEY);
+            }
+            mForecastAdapter.onRestoreInstanceState(savedInstanceState);
         }
+
+        mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+
         return rootView;
     }
 
@@ -273,6 +295,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         if (mPosition != RecyclerView.NO_POSITION) {
             outState.putInt(SELECTED_KEY, mPosition);
         }
+        mForecastAdapter.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
 
@@ -317,6 +340,27 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 //        }
 
         updateEmptyView();
+
+        if ( cursor.getCount() > 0 ) {
+            mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    // Since we know we're going to get items, we keep the listener around until
+                    // we see Children.
+                    if (mRecyclerView.getChildCount() > 0) {
+                        mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
+                        int itemPosition = mForecastAdapter.getSelectedItemPosition();
+                        if ( RecyclerView.NO_POSITION == itemPosition ) itemPosition = 0;
+                        RecyclerView.ViewHolder vh = mRecyclerView.findViewHolderForAdapterPosition(itemPosition);
+                        if ( null != vh && mAutoSelectView ) {
+                            mForecastAdapter.selectView( vh );
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
     }
 
     @Override

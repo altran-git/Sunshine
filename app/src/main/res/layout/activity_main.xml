@@ -4,6 +4,6 @@
     android:id="@+id/fragment_main"
     android:name="com.a2g.nd.sunshine.MainActivityFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:layout="@android:layout/list_content"
     app:sharedElementTransitions="true" />

@@ -44,6 +44,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private int mPosition = RecyclerView.NO_POSITION;
     private boolean mUseTodayLayout, mAutoSelectView;
     private int mChoiceMode;
+    private boolean mHoldForTransition;
 
     private static final String SELECTED_KEY = "selected_position";
     private final static int FORECAST_LOADER = 0;
@@ -90,7 +91,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(Uri dateUri);
+        public void onItemSelected(Uri dateUri, ForecastAdapter.ForecastAdapterViewHolder vh);
     }
 
     public MainActivityFragment() {
@@ -139,6 +140,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 0, 0);
         mChoiceMode = a.getInt(R.styleable.MainActivityFragment_android_choiceMode, AbsListView.CHOICE_MODE_NONE);
         mAutoSelectView = a.getBoolean(R.styleable.MainActivityFragment_autoSelectView, false);
+        mHoldForTransition = a.getBoolean(R.styleable.MainActivityFragment_sharedElementTransitions, false);
         a.recycle();
     }
 
@@ -241,8 +243,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 String locationSetting = Utility.getPreferredLocation(getActivity());
                 ((Callback) getActivity())
                         .onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
-                                locationSetting, date)
-                        );
+                                locationSetting, date), vh);
                 mPosition = vh.getAdapterPosition();
             }
         }, emptyView, mChoiceMode);
@@ -296,6 +297,13 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onActivityCreated (Bundle savedInstanceState){
         Log.d(LOG_TAG, "MainFrag onActivityCreated");
+        // We hold for transition here just in-case the activity
+        // needs to be re-created. In a standard return transition,
+        // this doesn't actually make a difference.
+        if ( mHoldForTransition ) {
+            getActivity().supportPostponeEnterTransition();
+        }
+
         // Prepare the loader.  Either re-connect with an existing one,
         // or start a new one.
         getLoaderManager().initLoader(FORECAST_LOADER, null, this);
@@ -350,13 +358,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             mRecyclerView.smoothScrollToPosition(mPosition);
         }
 
-//        else if (mPosition == ListView.INVALID_POSITION && MainActivity.mTwoPane) {
-//            mListView.setItemChecked(0, true);
-//        }
-
         updateEmptyView();
 
-        if ( cursor.getCount() > 0 ) {
+        if ( cursor.getCount() == 0 ) {
+            getActivity().supportStartPostponedEnterTransition();
+        } else {
             mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
@@ -369,6 +375,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                         RecyclerView.ViewHolder vh = mRecyclerView.findViewHolderForAdapterPosition(itemPosition);
                         if ( null != vh && mAutoSelectView ) {
                             mForecastAdapter.selectView( vh );
+                        }
+                        if ( mHoldForTransition ) {
+                             getActivity().supportStartPostponedEnterTransition();
                         }
                         return true;
                     }

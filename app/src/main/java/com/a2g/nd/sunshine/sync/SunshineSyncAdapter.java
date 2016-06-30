@@ -34,6 +34,7 @@ import com.a2g.nd.sunshine.MainActivity;
 import com.a2g.nd.sunshine.R;
 import com.a2g.nd.sunshine.Utility;
 import com.a2g.nd.sunshine.data.WeatherContract;
+import com.a2g.nd.sunshine.muzei.WeatherMuzeiSource;
 import com.bumptech.glide.Glide;
 
 import org.json.JSONArray;
@@ -459,6 +460,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                         new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
 
                 updateWidgets();
+                updateMuzei();
                 notifyWeather();
             }
 
@@ -527,6 +529,16 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
                 .setPackage(context.getPackageName());
         context.sendBroadcast(dataUpdatedIntent);
+    }
+
+    private void updateMuzei() {
+        // Muzei is only compatible with Jelly Bean MR1+ devices, so there's no need to update the
+        // Muzei background on lower API level devices
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                Context context = getContext();
+                context.startService(new Intent(ACTION_DATA_UPDATED)
+                        .setClass(context, WeatherMuzeiSource.class));
+        }
     }
 
     private void notifyWeather() {

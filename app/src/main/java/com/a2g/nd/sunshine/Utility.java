@@ -117,7 +117,7 @@ public class Utility {
      * @param dateInMillis The date in milliseconds
      * @return a user-friendly representation of the date.
      */
-    public static String getFriendlyDayString(Context context, long dateInMillis, boolean mUseTodayLayout) {
+    public static String getFriendlyDayString(Context context, long dateInMillis, boolean displayLongToday) {
         // The day string for forecast uses the following logic:
         // For today: "Today, June 8"
         // For tomorrow:  "Tomorrow"
@@ -132,17 +132,13 @@ public class Utility {
 
         // If the date we're building the String for is today's date, the format
         // is "Today, June 24"
-        if (julianDay == currentJulianDay) {
+        if (displayLongToday && julianDay == currentJulianDay) {
             String today = context.getString(R.string.today);
             int formatId = R.string.format_full_friendly_date;
-
-            String todayString;
-            if(mUseTodayLayout)
-                todayString = String.format(context.getString(formatId, today, getFormattedMonthDay(context, dateInMillis)));
-            else
-                todayString = "Today";
-
-            return todayString;
+            return String.format(context.getString(
+                    formatId,
+                    today,
+                    getFormattedMonthDay(context, dateInMillis)));
 
         } else if ( julianDay < currentJulianDay + 7 ) {
             // If the input date is less than a week in the future, just return the day name.
